@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Medicaid Requirements in the OBBBA (H.R. 1)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard for state policymakers and analysts. The structure prioritizes immediate understanding and targeted exploration over the linear format of the source report. It begins with high-level impact stats for context, followed by the core "Requirement Explorer," an interactive, filterable card grid that allows users to instantly segment provisions by their implementation status (the user's primary request). This is more usable than a static table. Below, thematic deep-dive sections with charts and accordions break down the complex topics (Eligibility, Financing, Benefits) into digestible, on-demand content. This task-oriented design—See Impact -> Explore Requirements -> Deep Dive on Topics—facilitates quicker comprehension and decision-making than a traditional report layout. -->
+    <!-- Visualization & Content Choices: 1. Key Impacts (Inform): Displayed as large-font stat cards for immediate grasp of top-line figures. 2. Requirements (Organize/Compare): Presented in a JS-powered filterable card grid instead of a static table. Goal: Allow users to quickly sort provisions by 'Self-Enacting' vs. 'Requires Federal Action'. Interaction: Button clicks to filter. Justification: Directly addresses user's primary sorting need in an intuitive, modern UI. Method: Vanilla JS filtering an array of objects. 3. Projected Savings (Compare): Visualized with a Chart.js Bar Chart. Goal: Make the abstract '$326B' figure for work requirements tangible and comparable to other provisions. Interaction: Hover tooltips for details. Justification: Bar charts are excellent for comparing magnitudes. Library: Chart.js (Canvas). 4. In-Depth Analysis (Inform): Placed in HTML/JS accordions. Goal: Present detailed text without overwhelming the user on page load. Interaction: Click to expand/collapse. Justification: Improves scannability and reduces cognitive load. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .tab-button.active { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .requirement-card { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-10 md:mb-16">
+            <h1 class="text-3xl md:text-5xl font-bold text-stone-900 mb-2">The OBBBA's New Medicaid Landscape</h1>
+            <p class="text-base md:text-lg text-stone-600 max-w-4xl mx-auto">Below is an interactive guide designed to summarize the most impactful requirements emerging from the "One Big Beautiful Bill Act" (OBBBA), signed into law on July 4, 2025. We have attempted to summarize these findings and includ a high level preparation checklist Medicaid programs may want to consider as they approach many of these new regulations. As with all legislation, some requirements have been set in the statute itself, while some will be defined through the regulatory process in the coming months, and years. <br><br> Please reach out to us at <b>Hello@theHealthCoLab.com</b> with any comments or questions.</p>
+        </header>
+
+        <main>
+            <section id="impact" class="mb-12 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-stone-900 mb-8">Projected National Impact by 2034</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 text-center">
+                        <p class="text-4xl md:text-5xl font-bold text-blue-600 mb-2">~$1 Trillion</p>
+                        <p class="text-base font-medium text-stone-700">Reduction in Federal Medicaid Spending</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 text-center">
+                        <p class="text-4xl md:text-5xl font-bold text-red-600 mb-2">>11.8 Million</p>
+                        <p class="text-base font-medium text-stone-700">Increase in Uninsured Americans</p>
+                    </div>
+                </div>
+                 <p class="text-sm text-stone-500 text-center mt-4">Source: Congressional Budget Office (CBO) Estimates</p>
+            </section>
+
+            <section id="explorer" class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-stone-200 mb-12 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-stone-900 mb-2 text-center">Requirement Explorer</h2>
+                <p class="text-stone-600 mb-8 text-center max-w-2xl mx-auto">Filter the provisions from H.R. 1 based on their implementation pathway. "Self-Enacting" provisions are effective on a set date without needing new federal rules, while others "Require Federal Action" (e.g., HHS guidance) before states can fully implement them.</p>
+
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                    <button class="tab-button text-sm md:text-base font-medium py-2 px-4 rounded-full border-2 border-transparent transition-all duration-300" data-filter="all">All Requirements</button>
+                    <button class="tab-button text-sm md:text-base font-medium py-2 px-4 rounded-full border-2 border-transparent transition-all duration-300" data-filter="self-enacting">Self-Enacting</button>
+                    <button class="tab-button text-sm md:text-base font-medium py-2 px-4 rounded-full border-2 border-transparent transition-all duration-300" data-filter="requires-federal-action">Requires Federal Action</button>
+                </div>
+
+                <div id="requirements-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+            
+            <section id="deep-dives" class="space-y-12 md:space-y-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-stone-900 -mb-4">Thematic Deep Dives</h2>
+                
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-stone-200">
+                     <h3 class="text-xl md:text-2xl font-bold text-stone-800 mb-4 text-center">Pillar 1: Eligibility & Enrollment Burdens</h3>
+                     <p class="text-stone-600 mb-6 text-center max-w-3xl mx-auto">The OBBBA introduces major new hurdles to Medicaid eligibility, centered on community engagement (work) requirements and more frequent renewals. The CBO projects the work requirement provision alone will generate massive federal savings, primarily from eligible individuals losing coverage due to administrative complexity, not from increased employment.</p>
+                     <div class="chart-container">
+                        <canvas id="savingsChart"></canvas>
+                     </div>
+                     <p class="text-sm text-stone-500 text-center mt-2">Source: CBO Federal Savings Projections</p>
+                </div>
+                
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-stone-200">
+                    <h3 class="text-xl md:text-2xl font-bold text-stone-800 mb-4 text-center">Pillar 2: State Financing Constraints</h3>
+                     <p class="text-stone-600 mb-6 text-center max-w-3xl mx-auto">The law significantly restricts states' ability to fund their share of Medicaid costs. It freezes the use of provider taxes, a key financing tool for every state but Alaska, and devalues existing taxes in states that have expanded Medicaid. This creates a "fiscal vise," forcing difficult choices between cutting provider payments, reducing benefits, or raising other taxes.</p>
+                     <div id="financing-accordion" class="space-y-3">
+                         <div class="accordion-item border rounded-lg">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-stone-700 flex justify-between items-center bg-stone-50 hover:bg-stone-100 rounded-lg">
+                                Impact of the Provider Tax Moratorium
+                                <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-stone-600">
+                                <p>The immediate moratorium on new or increased provider taxes removes a state's most flexible tool for responding to rising health care costs or economic downturns. States with pending provider tax legislation must halt it, and those with sunset provisions in existing tax laws may be unable to renew them, creating a fiscal cliff. This single provision is projected by the CBO to save the federal government $89 billion, highlighting its massive impact on state budgets.</p>
+                            </div>
+                         </div>
+                         <div class="accordion-item border rounded-lg">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-stone-700 flex justify-between items-center bg-stone-50 hover:bg-stone-100 rounded-lg">
+                                Destabilizing the Provider Ecosystem
+                                <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-stone-600">
+                                <p>The combination of reduced provider tax revenue and new federal caps on State-Directed Payments (SDPs) will inevitably lead to lower reimbursement rates for hospitals and nursing facilities. This is particularly dangerous for safety-net and rural hospitals, which often rely on supplemental payments to remain financially viable while serving a high proportion of Medicaid patients. The result is a heightened risk of service line reductions and facility closures, potentially creating "health care deserts."</p>
+                            </div>
+                         </div>
+                     </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-stone-200">
+                    <h3 class="text-xl md:text-2xl font-bold text-stone-800 mb-4 text-center">Pillar 3: Benefit & Cost-Sharing Mandates</h3>
+                     <p class="text-stone-600 mb-6 text-center max-w-3xl mx-auto">The OBBBA imposes new national mandates on states, requiring cost-sharing for many expansion enrollees and prohibiting federal funds for specific providers and services. This marks a significant federal intrusion into state health policy, creating new administrative burdens and legal risks for states.</p>
+                    <div id="benefits-accordion" class="space-y-3">
+                         <div class="accordion-item border rounded-lg">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-stone-700 flex justify-between items-center bg-stone-50 hover:bg-stone-100 rounded-lg">
+                                Mandatory Cost-Sharing
+                                <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-stone-600">
+                                <p>States are now required to impose cost-sharing (up to $35 per service) on ACA expansion enrollees with incomes above 100% FPL. Research shows that even modest out-of-pocket costs create significant barriers to care for low-income populations, often leading to delayed or forgone necessary care. This also creates major administrative complexity for states, which must now build systems to bill, track, and collect these payments while ensuring families do not exceed a 5% household income cap.</p>
+                            </div>
+                         </div>
+                         <div class="accordion-item border rounded-lg">
+                            <button class="accordion-header w-full text-left p-4 font-semibold text-stone-700 flex justify-between items-center bg-stone-50 hover:bg-stone-100 rounded-lg">
+                                Politicization of Benefits
+                                <span class="accordion-icon transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="accordion-content px-4 pb-4 text-stone-600">
+                                <p>Prohibiting federal funds for specific providers (e.g., Planned Parenthood) and services (e.g., gender-affirming care) sets a new precedent. A state may be caught between this federal funding prohibition and a separate state law or court order requiring coverage. In such cases, the state would be forced to cover the full cost with 100% state funds, creating new, un-plannable budget pressures and threatening access to a wide range of preventive health services for millions.</p>
+                            </div>
+                         </div>
+                     </div>
+                </div>
+
+            </section>
+
+            <section id="roadmap" class="mt-12 md:mt-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-stone-900 mb-8">State Preparedness Roadmap</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200">
+                        <h3 class="text-lg font-bold text-blue-700 mb-4">Immediate Actions (First 90 Days)</h3>
+                        <ul class="space-y-3 text-stone-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Convene leadership to analyze all "Self-Enacting" provisions.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Halt any state activities now prohibited by the law (e.g., new provider taxes).</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Establish a formal OBBBA implementation task force with executive leads.</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200">
+                        <h3 class="text-lg font-bold text-blue-700 mb-4">Near-Term Actions (3-12 Months)</h3>
+                        <ul class="space-y-3 text-stone-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Develop a formal strategy for engaging with HHS/CMS on new regulations.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Scope IT system changes and develop a multi-year budget request.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Conduct fiscal modeling to project the impact of financing restrictions.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Initiate formal communications with MCOs, providers, and advocates.</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-md border border-stone-200">
+                        <h3 class="text-lg font-bold text-blue-700 mb-4">Long-Term Strategy (1-3 Years)</h3>
+                        <ul class="space-y-3 text-stone-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Begin multi-year project to design, build, and test new IT systems.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Develop and deploy comprehensive training for eligibility workers.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Launch a multi-lingual public education campaign for beneficiaries.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Work with state legislature on long-term budget solutions.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-16 pt-8 border-t border-stone-200">
+            <p class="text-sm text-stone-500">This analysis is for public awareness and is being made available for use by the Health Co-Lab LLC under <a href= "https://creativecommons.org/publicdomain/zero/1.0/deed.en">CCO-1.0 licensing</a> conditions</p>
+        </footer>
+    </div>
+
+<script>
+const requirementsData = [
+    { 
+        title: "Community Engagement (Work) Requirements",
+        category: "requires-federal-action",
+        date: "Implement by Dec 31, 2026",
+        desc: "States must enforce work/community engagement requirements for most ACA expansion enrollees. HHS must issue regulations defining key terms and verification standards."
+    },
+    { 
+        title: "Increased Frequency of Eligibility Redeterminations",
+        category: "self-enacting",
+        date: "Starts Oct 1, 2026",
+        desc: "States must redetermine eligibility for ACA expansion enrollees every six months, up from the standard 12-month cycle."
+    },
+    { 
+        title: "Moratorium on Enrollment Simplification Rules",
+        category: "self-enacting",
+        date: "Effective July 4, 2025",
+        desc: "Freezes implementation of two Biden-era rules aimed at streamlining Medicaid enrollment and renewal processes."
+    },
+    { 
+        title: "Address Verification",
+        category: "requires-federal-action",
+        date: "Starts Oct 1, 2026",
+        desc: "States must implement a process to verify in-state residency using specific data sources. HHS must establish the procedures."
+    },
+    { 
+        title: "Prohibition of FFP for Unverified Status",
+        category: "self-enacting",
+        date: "Starts Oct 1, 2026",
+        desc: "Eliminates the mandatory 'reasonable opportunity period' (ROP) for verifying citizenship/immigration status, making it a state option to provide coverage during this time."
+    },
+    {
+        title: "Narrowing of 'Qualified Alien' Categories",
+        category: "self-enacting",
+        date: "Effective Oct 1, 2026",
+        desc: "Narrows the categories of non-citizens eligible for full Medicaid services, notably removing humanitarian entrants."
+    },
+    { 
+        title: "Moratorium on New or Increased Provider Taxes",
+        category: "self-enacting",
+        date: "Effective July 4, 2025",
+        desc: "Prohibits states from implementing new health care-related taxes or increasing the rate or base of existing ones, a key state financing tool."
+    },
+    { 
+        title: "Reduction of Provider Tax Safe Harbor",
+        category: "self-enacting",
+        date: "Starts FY 2028",
+        desc: "For expansion states, the permissible provider tax threshold is reduced from 6% to 3.5% of net patient revenue, limiting state financing."
+    },
+    { 
+        title: "Revising State-Directed Payments (SDPs)",
+        category: "requires-federal-action",
+        date: "Starts Oct 1, 2026",
+        desc: "Revises and caps the payment limit for certain state-directed payments to hospitals and nursing facilities. Requires new CMS guidance."
+    },
+    {
+        title: "Strict Budget Neutrality for Waivers",
+        category: "requires-federal-action",
+        date: "Effective July 4, 2025",
+        desc: "Codifies a strict budget neutrality rule for all Section 1115 waivers, limiting state flexibility. HHS must specify the methodology."
+    },
+    { 
+        title: "Mandatory Cost-Sharing",
+        category: "requires-federal-action",
+        date: "Starts Oct 1, 2028",
+        desc: "Requires states to impose cost-sharing (up to $35/service) on expansion enrollees above 100% FPL. Requires federal guidance on implementation details."
+    },
+    { 
+        title: "Prohibition of Funding for Gender Transition Procedures",
+        category: "self-enacting",
+        date: "Starts Jan 1, 2026",
+        desc: "Prohibits federal financial participation (FFP) for any 'gender transition procedure' as defined in the statute."
+    },
+    { 
+        title: "Prohibition of Funding for 'Prohibited Entities'",
+        category: "requires-federal-action",
+        date: "Starts Oct 1, 2026",
+        desc: "Prohibits FFP for payments to entities like Planned Parenthood. HHS must first identify and designate the specific entities."
+    },
+    {
+        title: "Moratorium on Nursing Home Staffing Rule",
+        category: "self-enacting",
+        date: "Effective July 4, 2025",
+        desc: "Imposes a moratorium on the final rule establishing minimum staffing standards for long-term care facilities."
+    }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('requirements-grid');
+    const filterButtons = document.querySelectorAll('.tab-button');
+    let currentFilter = 'all';
+
+    const renderGrid = () => {
+        grid.innerHTML = '';
+        const filteredData = requirementsData.filter(item => 
+            currentFilter === 'all' || item.category === currentFilter
+        );
+
+        filteredData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'requirement-card bg-stone-50 p-5 rounded-lg border border-stone-200 shadow-sm';
+            
+            const categoryClass = item.category === 'self-enacting' ? 'text-green-600 bg-green-100' : 'text-orange-600 bg-orange-100';
+            const categoryText = item.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-bold text-stone-800 pr-2">${item.title}</h4>
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full ${categoryClass} whitespace-nowrap">${categoryText}</span>
+                </div>
+                <p class="text-sm text-stone-600 mb-4">${item.desc}</p>
+                <p class="text-xs font-medium text-stone-500">Effective: ${item.date}</p>
+            `;
+            grid.appendChild(card);
+        });
+    };
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentFilter = button.dataset.filter;
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            renderGrid();
+        });
+    });
+
+    document.querySelector('.tab-button[data-filter="all"]').classList.add('active');
+    renderGrid();
+
+    const savingsCtx = document.getElementById('savingsChart').getContext('2d');
+    new Chart(savingsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Work Requirements', '6-Month Redeterminations', 'Provider Tax Moratorium'],
+            datasets: [{
+                label: 'Projected Federal Savings (in Billions)',
+                data: [326, 63, 89],
+                backgroundColor: ['#3b82f6', '#93c5fd', '#bfdbfe'],
+                borderColor: ['#2563eb', '#60a5fa', '#93c5fd'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#e5e7eb' } },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Key Drivers of Projected Federal Savings',
+                    font: { size: 16 },
+                    color: '#1f2937',
+                    padding: { bottom: 20 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` $${context.raw} Billion`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.accordion-icon');
+            
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = null);
+                document.querySelectorAll('.accordion-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
