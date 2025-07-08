@@ -356,5 +356,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+<script>
+    function postResizeMessage() {
+        // Use a small timeout to ensure all content (like images and charts) has finished rendering
+        setTimeout(() => {
+            const height = document.body.scrollHeight;
+            // This sends a message to the parent window (your Webflow page)
+            if (window.parent) {
+                window.parent.postMessage({
+                    type: 'resize',
+                    height: height
+                }, '*');
+            }
+        }, 300); // 300ms delay
+    }
+
+    // Run the function on initial load
+    window.addEventListener('load', postResizeMessage);
+
+    // Also run the function whenever an accordion is clicked, as this changes the content height
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', postResizeMessage);
+    });
+
+    // Run it when filter tabs are clicked
+     document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', postResizeMessage);
+    });
+</script>
 </body>
 </html>
