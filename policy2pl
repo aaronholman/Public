@@ -373,21 +373,23 @@
             }
         });
     </script>
+
 <script>
-function sendHeight() {
-// Get the total height of the page content
-const height = document.documentElement.scrollHeight;
+  function sendHeight() {
+    // Get the total height of the page content
+    const height = document.documentElement.scrollHeight;
+    
+    // Send the height to the parent window (your Webflow site)
+    // The target origin '*' is less secure but good for testing.
+    // For production, replace '*' with 'https://www.thehealthcolab.com'
+    parent.postMessage({ height: height }, 'https://www.thehealthcolab.com');
+  }
 
-// Send the height to the parent window
-// Replace "the URL below if different" 
-parent.postMessage({ height: height }, 'https://www.thehealthcolab.com/';
-}
+  // Send the height when the page loads
+  window.onload = sendHeight;
 
-// Send the height when the page loads
-window.onload = sendHeight;
-
-// Also send the height if the window is resized
-window.onresize = sendHeight;
+  // Also send the height if the window is resized (e.g., on mobile)
+  window.onresize = sendHeight;
 </script>
 
 </body>
