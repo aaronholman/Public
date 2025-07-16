@@ -373,6 +373,22 @@
             }
         });
     </script>
+<script>
+function sendHeight() {
+// Get the total height of the page content
+const height = document.documentElement.scrollHeight;
+
+// Send the height to the parent window
+// Replace "the URL below if different" 
+parent.postMessage({ height: height }, 'https://www.thehealthcolab.com/';
+}
+
+// Send the height when the page loads
+window.onload = sendHeight;
+
+// Also send the height if the window is resized
+window.onresize = sendHeight;
+</script>
 
 </body>
 </html>
